@@ -123,6 +123,7 @@ housing_prepared = housing_tr.join(
 lin_reg = LinearRegression()
 lin_reg.fit(housing_prepared, housing_labels)
 
+
 housing_predictions = lin_reg.predict(housing_prepared)
 lin_mse = mean_squared_error(housing_labels, housing_predictions)
 lin_rmse = np.sqrt(lin_mse)
