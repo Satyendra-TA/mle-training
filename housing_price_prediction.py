@@ -1,8 +1,6 @@
 import os
 import tarfile
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import randint
@@ -97,7 +95,6 @@ housing = strat_train_set.drop(
     "median_house_value", axis=1
 )  # drop labels for training set
 housing_labels = strat_train_set["median_house_value"].copy()
-
 
 imputer = SimpleImputer(strategy="median")
 
