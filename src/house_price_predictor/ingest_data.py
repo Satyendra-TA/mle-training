@@ -42,6 +42,13 @@ def engineer_features(housing: pd.DataFrame) -> pd.DataFrame:
     return housing
 
 
+def split_data(dataset, test_size):
+    train, test = train_test_split(
+        housing_data, test_size=0.2, random_state=42
+    )
+    return train, test
+
+
 if __name__ == "__main__":
     if not os.path.exists(os.path.join(HOUSING_PATH, "housing.csv")):
         fetch_housing_data()
@@ -61,9 +68,7 @@ if __name__ == "__main__":
 
     housing_data = load_housing_data()
 
-    train_set, test_set = train_test_split(
-        housing_data, test_size=0.2, random_state=42
-    )
+    train_set, test_set = split_data(housing_data, test_size=0.2)
 
     housing_df = train_set.drop(
         "median_house_value", axis=1

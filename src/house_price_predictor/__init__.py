@@ -1,3 +1,3 @@
-# import logging
+from logger import setup_logging
 
-# logging.getLogger(__name__).addHandler(logging.NullHandler())
+setup_logging()
