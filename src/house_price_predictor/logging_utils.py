@@ -6,6 +6,10 @@ import yaml
 
 
 def setup_logging():
+    """
+    Configures the root logger
+
+    """
     config_path = os.path.join(
         os.path.dirname(__file__), "configs", "logging_config.yaml"
     )

@@ -16,6 +16,21 @@ HOUSING_PATH = os.path.join(PROJECT_ROOT, "data", "raw")
 def fetch_housing_data(
     housing_url: str = HOUSING_URL, housing_path: str = HOUSING_PATH
 ) -> None:
+    """
+    Fetches the housing price datasey from the provided url
+
+    Parameters
+    ----------
+    housing_url : str, optional
+        source URL of the housing price dataset
+    housing_path : str, optional
+        local directory to store the housing dataset
+
+    Returns
+    -------
+    None
+
+    """
     os.makedirs(housing_path, exist_ok=True)
     tgz_path = os.path.join(housing_path, "housing.tgz")
     urllib.request.urlretrieve(housing_url, tgz_path)
@@ -25,11 +40,38 @@ def fetch_housing_data(
 
 
 def load_housing_data(housing_path: str = HOUSING_PATH) -> pd.DataFrame:
+    """
+    loads the housing data into a pandas dataframe
+
+    Parameters
+    ----------
+    housing_path : str
+        local path to the housing data
+
+    Returns
+    -------
+        a pandas datarame of housing data
+
+    """
     csv_path = os.path.join(housing_path, "housing.csv")
     return pd.read_csv(csv_path)
 
 
 def engineer_features(housing: pd.DataFrame) -> pd.DataFrame:
+    """
+    Feature engineering for housing data
+
+    Parameters
+    ----------
+    housing : pd.DataFrame
+        a pandas dataframe
+
+    Returns
+    -------
+    housing : pd. DataFrame
+        pandas dataframe with engineered features
+
+    """
     housing["rooms_per_household"] = (
         housing["total_rooms"] / housing["households"]
     )
@@ -43,6 +85,25 @@ def engineer_features(housing: pd.DataFrame) -> pd.DataFrame:
 
 
 def split_data(dataset, test_size):
+    """
+    splits the dataset into training and testing data
+
+    Parameters
+    ----------
+    dataset : pd.DataFrame
+        dataset to split
+    test_size : float
+        size of the test set as a fraction to total dataset size
+
+    Returns
+    -------
+    train : pd.DataFrame
+        training dataset
+
+    test : pd.DataFrame
+        test dataset
+
+    """
     train, test = train_test_split(
         housing_data, test_size=0.2, random_state=42
     )

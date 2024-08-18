@@ -24,6 +24,24 @@ logger = logging.getLogger(__name__)
 def train_model(
     model: Regressor, X_train: pd.DataFrame, y_train: pd.DataFrame
 ) -> Regressor:
+    """
+    trains the model on given data
+
+    Parameters
+    ----------
+    model : Regressor
+        model to train
+    X_train : pd.DataFrame
+        training data without labels
+    y_train : pd.DataFrame
+        labels for training data
+
+    Returns
+    -------
+    model : Regressor
+        trained model
+
+    """
     logger.info("Model training initiated - %s", model.__class__.__name__)
     model.fit(X_train, y_train)
     logger.info("Model training finished - %s", model.__class__.__name__)
@@ -37,6 +55,27 @@ def randomized_search_tuning(
     params_dist: dict,
     eval_criterion: str = "neg_mean_squared_error",
 ) -> Tuple[Regressor, dict, float]:
+    """
+    Performs randomized search hyperparamter tuning of the model
+
+    Paramaters
+    ----------
+    model : Regressor
+        model to tune
+    X_train : pd.DataFrame
+        training dataset without labels
+    y_train : pd.Series
+        labels of trining data
+    params_dist : dict
+        dictionary of hyperparameters
+    eval_criterion : str
+        evaluations strategy
+
+    Returns
+    -------
+    A tuple of tuned model, best hyperparameters, best score
+
+    """
 
     logger.info(
         "Initiating Hyperparameter tuning with Randomized search on %s",
@@ -74,7 +113,27 @@ def grid_search_tuning(
     params_grid: dict,
     eval_criterion: str = "neg_mean_squared_error",
 ) -> Tuple[Regressor, dict, float]:
+    """
+    Performs Grid search hyperparamter tuning of the model
 
+    Paramaters
+    ----------
+    model : Regressor
+        model to tune
+    X_train : pd.DataFrame
+        training dataset without labels
+    y_train : pd.Series
+        labels of trining data
+    params_dist : dict
+        dictionary of hyperparameters
+    eval_criterion : str
+        evaluations strategy
+
+    Returns
+    -------
+    A tuple of tuned model, best hyperparameters, best score
+
+    """
     logger.info(
         "Initiating Hyperparameter tuning with Grid search on %s",
         model.__class__.__name__,
