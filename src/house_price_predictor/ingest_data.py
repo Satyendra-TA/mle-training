@@ -304,8 +304,18 @@ def get_preprocessing_pipeline(df, num_attributes, cat_attributes):
     cat_pipeline = Pipeline([("OHE", CustomOneHotEncoder(cat_attributes))])
 
     # full pipeline
-    full_pipeline = PandasFeatureUnion(
-        [("numerical_pipe", num_pipeline), ("categorical_pipe", cat_pipeline)]
+    # full_pipeline = PandasFeatureUnion(
+    #     [
+    #       ("numerical_pipe", num_pipeline),
+    #       ("categorical_pipe", cat_pipeline)
+    #     ]
+    # )
+
+    full_pipeline = Pipeline(
+        [
+            ("numerical_preprocessing", num_pipeline),
+            ("categorical_preprocessing", cat_pipeline),
+        ]
     )
 
     return full_pipeline
@@ -357,47 +367,41 @@ if __name__ == "__main__":
         raise "The specified path %s does not exist" % (args.output_path)
     # load the data
     housing_data = load_housing_data()
-    target = ["median_house_value"]
+
     # train test split
     train_set, test_set = split_data(housing_data, test_size=0.2)
 
     # Features dataframe
-    housing_df = train_set.drop(
+    X_train = train_set.drop(
         "median_house_value", axis=1
     )  # drop labels for training set
 
-    # training labels
-    housing_labels = train_set["median_house_value"].copy()
-
+    cat_attribs = ["ocean_proximity"]
     # numerical features
-    housing_num = housing_df.drop("ocean_proximity", axis=1)
+    X_num = X_train.drop(cat_attribs, axis=1)
+    num_attribs = X_num.columns.tolist()
 
     # preprocessing pipeline
-    num_attribs = housing_num.columns.tolist()
-
-    cat_attribs = ["ocean_proximity"]
-
     preprocessing_pipeline = get_preprocessing_pipeline(
-        housing_df, num_attribs, cat_attribs
+        X_train, num_attribs, cat_attribs
     )
-    housing_prepared = preprocessing_pipeline.fit_transform(housing_df)
+    housing_prepared = preprocessing_pipeline.fit_transform(X_train)
 
     # preprocess the test set
     X_test = test_set.drop("median_house_value", axis=1)
-    y_test = test_set["median_house_value"].copy()
-
     X_test_prepared = preprocessing_pipeline.transform(X_test)
 
-    # save the feature and label files as csv
+    # save the files as csv
+    housing_prepared["median_house_value"] = train_set[
+        "median_house_value"
+    ].copy()
     housing_prepared.to_csv(
-        os.path.join(args.output_path, "train_X.csv"), index=None
+        os.path.join(args.output_path, "train.csv"), index=None
     )
-    housing_labels.to_csv(
-        os.path.join(args.output_path, "train_labels.csv"), index=None
-    )
+
+    X_test_prepared["median_house_value"] = test_set[
+        "median_house_value"
+    ].copy()
     X_test_prepared.to_csv(
-        os.path.join(args.output_path, "test_X.csv"), index=None
-    )
-    y_test.to_csv(
-        os.path.join(args.output_path, "test_labels.csv"), index=None
+        os.path.join(args.output_path, "test.csv"), index=None
     )
