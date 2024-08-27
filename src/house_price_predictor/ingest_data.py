@@ -20,7 +20,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_URL = DOWNLOAD_ROOT + "datasets/housing/housing.tgz"
-PROJECT_ROOT = "/mnt/c/Users/satyendra.mishra/Work/mle-training/"
+PROJECT_ROOT = "/mle-training/"
 HOUSING_PATH = os.path.join(PROJECT_ROOT, "data", "raw")
 
 
