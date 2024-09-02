@@ -1,11 +1,12 @@
 import logging
 import os
-import pickle
 from argparse import ArgumentParser
 from typing import Tuple, TypeAlias
 
+import joblib
 import numpy as np
 import pandas as pd
+from logging_utils import setup_logging
 from scipy.stats import randint
 from score import evaluate_model
 from sklearn.base import RegressorMixin
@@ -14,9 +15,11 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.tree import DecisionTreeRegressor
 
-PROJECT_ROOT = "/mnt/c/Users/satyendra.mishra/Work/mle-training/"
+PROJECT_ROOT = "/mle-training"
 
 Regressor: TypeAlias = RegressorMixin
+
+setup_logging()
 
 logger = logging.getLogger(__name__)
 
@@ -189,30 +192,30 @@ if __name__ == "__main__":
     housing_df = pd.read_csv(args.train_data_path)
     logger.info("Training data loaded from - %s", args.train_data_path)
     # separate the features and labels
-    housing_prepared = housing_df.drop("median_house_value", axis=1).to_numpy()
-    housing_labels = housing_df["median_house_value"].to_numpy()
+    X_train = housing_df.drop("median_house_value", axis=1)
+    y_train = housing_df["median_house_value"]
 
     # train a linear regression model
     lin_reg = LinearRegression()
-    lin_reg = train_model(lin_reg, housing_prepared, housing_labels)
-    lin_mae, lin_rmse = evaluate_model(
-        lin_reg, housing_prepared, housing_labels
-    )
+    lin_reg = train_model(lin_reg, X_train, y_train)
+    lin_mae, lin_rmse, lin_r2 = evaluate_model(lin_reg, X_train, y_train)
     logger.info(
-        "Evaluation on training data: mae = %.2f, mse = %.2f",
+        "Evaluation on training data: mae = %.4f, \
+        mse = %.4f, r_squared = %.4f",
         lin_mae,
         lin_rmse,
+        lin_r2,
     )
     # train a decision tree model
     tree_reg = DecisionTreeRegressor(random_state=42)
-    tree_reg = train_model(tree_reg, housing_prepared, housing_labels)
-    tree_mae, tree_rmse = evaluate_model(
-        tree_reg, housing_prepared, housing_labels
-    )
+    tree_reg = train_model(tree_reg, X_train, y_train)
+    tree_mae, tree_rmse, tree_r2 = evaluate_model(tree_reg, X_train, y_train)
     logger.info(
-        "Evaluation on training data: mae = %.2f, mse = %.2f",
+        "Evaluation on training data: mae = %.2f, \
+        mse = %.2f, r_squared = %.4f",
         tree_mae,
         tree_rmse,
+        tree_r2,
     )
     # randomized search with Random forest
     forest_reg = RandomForestRegressor(random_state=42)
@@ -223,10 +226,10 @@ if __name__ == "__main__":
 
     rnd_best_model, rnd_best_params, rnd_best_score = randomized_search_tuning(
         forest_reg,
-        housing_prepared,
-        housing_labels,
+        X_train,
+        y_train,
         params_dist=param_distribs,
-        eval_criterion="mean_squared_error",
+        eval_criterion="neg_mean_squared_error",
     )
 
     # Grid search with Random Forest
@@ -246,28 +249,24 @@ if __name__ == "__main__":
     # (12+6)*5=90 rounds of training
     grid_best_model, grid_best_params, grid_best_score = grid_search_tuning(
         forest_reg,
-        housing_prepared,
-        housing_labels,
+        X_train,
+        y_train,
         params_grid=param_grid,
-        eval_criterion="mean_squard_error",
+        eval_criterion="neg_mean_squared_error",
     )
 
     if grid_best_score > rnd_best_score:
         feature_importances = grid_best_model.feature_importances_
-        sorted(
-            zip(feature_importances, housing_prepared.columns), reverse=True
-        )
+        sorted(zip(feature_importances, X_train.columns), reverse=True)
         final_model = grid_best_model
     else:
         feature_importances = rnd_best_model.feature_importances_
-        sorted(
-            zip(feature_importances, housing_prepared.columns), reverse=True
-        )
+        sorted(zip(feature_importances, X_train.columns), reverse=True)
         final_model = rnd_best_model
 
     # save the best model
     with open(args.model_path, mode="wb") as f:
-        pickle.dump(final_model, f)
+        joblib.dump(final_model, f)
     logger.info(
         "Best model, %s, saved to directory: %s",
         final_model.__class__.__name__,
